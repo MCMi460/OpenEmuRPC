@@ -85,30 +85,17 @@ def is_running():
 def get_windows():
     cmd = """
         on run
-            tell application "System Events"
-            	set this_info to {}
-            	repeat with theProcess in (application processes where visible is true)
-            		if name of theProcess is "%s" then
-            			set this_info to this_info & (value of (first attribute whose name is "AXWindows") of theProcess)
-            		end if
-            	end repeat
-            	return this_info
-            end tell
+        	set this_info to {}
+        	tell application "System Events"
+        		set this_info to this_info & (name of every window of process "%s")
+        	end tell
+        	return this_info
         end run
     """
     response = process(cmd)
-    windows = []
-    for i in response.split('window'):
-        if f'of application process {appName}' in i:
-            i = i.lstrip()
-            i = i.replace(f'of application process {appName}','')
-            i = i.rstrip()
-            i = i.rstrip(',')
-            i = i.rstrip()
-            windows.append(i)
-    for i in range(100):
-        try: windows.remove(f'{i}')
-        except: pass
+    windows = response.split(', ')
+    try: windows.remove('')
+    except: pass
     return windows
 
 # Contains logic code that calls functions to grab data using Apple Script and updates the RPC controller with the data
