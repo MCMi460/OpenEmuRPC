@@ -1,0 +1,2 @@
+rumps>=0.3.0
+pypresence>=4.2.0

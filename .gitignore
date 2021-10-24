@@ -1,0 +1,9 @@
+# MacOS Exclusions
+.DS_Store
+
+# Python-based Exclusions
+venv
+__pycache__
+
+# py2app Exclusions
+dist
