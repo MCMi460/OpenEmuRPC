@@ -8,7 +8,8 @@ else:
     from threading import Thread # This allows us to run multiple blocking processes at once
     from time import sleep, time # This lets us get the exact time stamp as well as wait time
     from pypresence import Presence # This is what connects us to Discord and lets us change our status
-    from subprocess import run # This will allow us to execute Apple Script
+    from AppKit import NSWorkspace # Allows us to check if OpenEmu is running
+    import Quartz # Very important for us in order to get windows running with OpenEmu
 
 # Set default appname we're using for grabbing data with Apple Script
 appName = "OpenEmu"
@@ -47,7 +48,7 @@ def connect():
             fails += 1
             if fails > 500:
                 # If program fails 500 consecutive times in a row to connect, then send a notification with the exception
-                notification("Error in Ongaku", "Make an issue if error persists", f"\"{e}\"")
+                notification("Error in OpenEmuRPC", "Make an issue if error persists", f"\"{e}\"")
                 log_error(e)
                 exit(f"Error, failed after 500 attempts\n\"{e}\"")
             continue
@@ -60,40 +61,21 @@ try:
 except:
     exit("Failed to connect")
 
-# All of these 'get functions' use Python subprocess-ing to pipe Apple Script data and get it
-# Then the fancy stuff when returning the function is just to format the string to look proper
-
-def process(cmd):
-    return run(['osascript', '-e', cmd % appName], capture_output=True).stdout.decode('utf-8').rstrip()
-
 # Checks if OpenEmu is running
 def is_running():
-    cmd = """
-        on is_running(appName)
-        	tell application "System Events" to (name of processes) contains appName
-        end is_running
-
-        return is_running("%s")
-    """
-    if process(cmd) == 'false':
-        a = False
-    else:
-        a = True
-    return a
+    apps = NSWorkspace.sharedWorkspace().launchedApplications()
+    for app in apps:
+        if app['NSApplicationName'] == appName:
+            return True
+    return False
 
 # Returns all windows for applications named "OpenEmu"
 def get_windows():
-    cmd = """
-        on run
-        	set this_info to {}
-        	tell application "System Events"
-        		set this_info to this_info & (name of every window of process "%s")
-        	end tell
-        	return this_info
-        end run
-    """
-    response = process(cmd)
-    windows = response.split(', ')
+    response = Quartz.CGWindowListCopyWindowInfo(Quartz.kCGWindowListExcludeDesktopElements|Quartz.kCGWindowListOptionOnScreenOnly,Quartz.kCGNullWindowID)
+    windows = []
+    for window in response:
+        if window[Quartz.kCGWindowOwnerName] == appName:
+            windows.append(window.get(Quartz.kCGWindowName, '<no name>'))
     try: windows.remove('')
     except: pass
     return windows
