@@ -1,29 +1,20 @@
-from sys import platform, exit # This gives us our current OS' information
+from pypresence import Precense
+import time
 
-# Make sure platform is MacOS
-if platform.startswith("darwin") != True:
-    exit(f"There is not currently a {platform} version supported, please use a different application.")
-else:
-    from rumps import App, clicked, alert, notification, quit_application # This module adds menu bar support
-    from threading import Thread # This allows us to run multiple blocking processes at once
-    from time import sleep, time # This lets us get the exact time stamp as well as wait time
-    from pypresence import Presence # This is what connects us to Discord and lets us change our status
-    from AppKit import NSWorkspace # Allows us to check if OpenEmu is running
-    import Quartz # Very important for us in order to get windows running with OpenEmu
+
 
 # Set default appname we're using for grabbing data with Apple Script
 appName = "OpenEmu"
 
 # Set Discord Rich Presence ID
-rpc = Presence('901628121214779412')
+client_id = '901628121214779412'
+RPC = Precense(client_id,pipe=0)
+RPC.connect()
 
-from os.path import expanduser # Get home directory path
-from datetime import datetime # Lets us get current time and date
-
-path = expanduser("~/Library/Application Support/OpenEmuRPC")
+path = os. getcwd()
 
 def log_error(error):
-    print(error)
+    print("error")
     while True:
         try:
             with open(f'{path}/error.txt',"a") as append:
