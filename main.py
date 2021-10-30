@@ -11,7 +11,7 @@ else:
     from AppKit import NSWorkspace # Allows us to check if OpenEmu is running
     import Quartz # Very important for us in order to get windows running with OpenEmu
 
-# Set default appname we're using for grabbing data with Apple Script
+# Set default appname
 appName = "OpenEmu"
 
 # Set Discord Rich Presence ID
@@ -76,8 +76,8 @@ def get_windows():
     for window in response:
         if window[Quartz.kCGWindowOwnerName] == appName:
             windows.append(window.get(Quartz.kCGWindowName, '<no name>'))
-    try: windows.remove('')
-    except: pass
+    while '' in windows:
+        windows.remove('')
     return windows
 
 # Contains logic code that calls functions to grab data using Apple Script and updates the RPC controller with the data
