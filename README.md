@@ -1,4 +1,6 @@
-A simple application that provides your current OpenEmu game as an RPC state in Discord via [PyPresence](https://github.com/qwertyquerty/pypresence).
+# OpenEmuRPC
+
+A simple application that provides your current OpenEmu game as an RPC state in Discord via [PyPresence](https://github.com/qwertyquerty/pypresence). Only available for MacOS, as is [OpenEmu](https://openemu.org/).
 
 ## How to use
 Unzip and open the latest x86_64 version from the [releases tab](https://github.com/MCMi460/OpenEmuRPC/releases)
@@ -9,6 +11,10 @@ curl https://raw.githubusercontent.com/MCMi460/OpenEmuRPC/main/build.sh -o build
 chmod -R 777 build.sh
 ./build.sh
 ```
+If the app displays a Launch Error, give it permission like so:
+
+** -> System Preferences -> Security and Privacy -> Screen Recording -> +** and choose the app's location.
+
 ---
 If you have any issues, [contact me here](https://mi460.dev/bugs).
 

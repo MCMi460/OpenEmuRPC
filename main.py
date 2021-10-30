@@ -17,11 +17,12 @@ appName = "OpenEmu"
 # Set Discord Rich Presence ID
 rpc = Presence('901628121214779412')
 
-from os.path import expanduser # Get home directory path
+from os.path import expanduser, exists # Get home directory path
 from datetime import datetime # Lets us get current time and date
 
 path = expanduser("~/Library/Application Support/OpenEmuRPC")
 
+# Set default function for logging errors
 def log_error(error):
     print(error)
     while True:
@@ -34,6 +35,19 @@ def log_error(error):
             mkdir(path)
             continue
 
+# Checks for screen recording permissions
+def check_permissions():
+    return Quartz.CGPreflightScreenCaptureAccess()
+
+# Requests screen recording permissions
+def request_permissions():
+    Quartz.CGRequestScreenCaptureAccess()
+
+# Check first run
+def check_run():
+    return exists(f'{path}/error.txt')
+
+# Connect to Discord Rich Presence via function
 def connect():
     # Set fails variable to 0
     fails = 0
@@ -53,6 +67,7 @@ def connect():
                 exit(f"Error, failed after 500 attempts\n\"{e}\"")
             continue
 
+# Run function
 connect()
 
 try:
@@ -60,6 +75,14 @@ try:
     rpc.connect()
 except:
     exit("Failed to connect")
+
+# Get screen recording permissions
+if not check_run():
+    if not check_permissions():
+        request_permissions()
+        error = 'Failed to receive Screen Recording Permissions.'
+        log_error(error)
+        notification('Launch Error','',error)
 
 # Checks if OpenEmu is running
 def is_running():
@@ -87,28 +110,40 @@ def update():
         return
     # Grab windows
     windows = get_windows()
+    menus = False
+    for i in ('Library','Gameplay','Controls','Cores','System Files','Shader Parameters'):
+        if i in windows:
+            menus = i
+            windows.remove(i)
+    for i in ('File','Edit','View','Window','Help'):
+        if i in windows:
+            windows.remove(i)
     if windows == [f'{appName}'] or windows == []:
         status = 0
+        details = 'Idly in menus...'
     else:
         status = 1
         try: windows.remove(f'{appName}')
         except: pass
+        details = f'Playing {windows[0]}'
         if len(windows) > 1:
             status = 2
-    buttons = []
-    buttons.append({"label": "See OpenEmu", "url": "https://openemu.org/"})
+            details = f'Playing {", ".join(windows)}'
+    buttons = [{"label": f"See {appName}", "url": "https://openemu.org/"},]
     if status > 0:
         global games
         if games != windows:
             global start
             start = round(time())
             games = windows
-    if status == 1:
-        rpc.update(details=f'Playing {windows[0]}',large_image='main',large_text='OpenEmu',start=start,buttons=buttons)
+    if menus and status > 0:
+        details = f'In {menus} of ' + details[8:]
+    if status == 0:
+        rpc.update(details=details,large_image='main',large_text=appName,buttons=buttons)
+    elif status == 1:
+        rpc.update(details=details,large_image='main',large_text=appName,start=start,buttons=buttons)
     elif status == 2:
-        rpc.update(details=f'Playing {", ".join(windows)}',large_image='main',large_text='OpenEmu',start=start,buttons=buttons)
-    elif status == 0:
-        rpc.update(details=f'Idly in menus...',large_image='main',large_text='OpenEmu',buttons=buttons)
+        rpc.update(details=details,large_image='main',large_text=appName,start=start,buttons=buttons)
 
 # Run update loop on a separate thread so the menu bar app can run on the main thread
 class BackgroundUpdate(Thread):
