@@ -10,6 +10,8 @@ else:
     from pypresence import Presence # This is what connects us to Discord and lets us change our status
     from AppKit import NSWorkspace # Allows us to check if OpenEmu is running
     import Quartz # Very important for us in order to get windows running with OpenEmu
+    import sqlite3 # Useful for receiving artwork data
+    import os # Arguably one of the most useful default Python libraries
 
 # Set default appname
 appName = "OpenEmu"
@@ -21,6 +23,8 @@ from os.path import expanduser, exists # Get home directory path
 from datetime import datetime # Lets us get current time and date
 
 path = expanduser("~/Library/Application Support/OpenEmuRPC")
+
+emupath = expanduser("~/Library/Application Support/OpenEmu/Game Library")
 
 # Set default function for logging errors
 def log_error(error):
@@ -103,6 +107,35 @@ def get_windows():
         windows.remove('')
     return windows
 
+# Gets artwork for a particular game using OpenEmu's Library database
+def get_artwork(gametitle:str):
+    try:
+        # Connect to OpenEmu's library database
+        con = sqlite3.connect(os.path.join(emupath, "Library.storedata"))
+        cursor = con.cursor()
+
+        # Get sources from image db
+        cursor.execute("SELECT ZSOURCE FROM ZIMAGE")
+        art = [ i[0] for i in cursor.fetchall() ]
+        cursor.execute("SELECT Z_PK FROM ZIMAGE")
+        zsource = [ i[0] for i in cursor.fetchall() ]
+        art = [ (zsource[i],art[i]) for i in range(len(art)) ]
+        cursor.execute("SELECT ZGAMETITLE FROM ZGAME")
+        games = [ i[0] for i in cursor.fetchall() ]
+        cursor.execute("SELECT Z_PK FROM ZROM")
+        zpk = [ i[0] for i in cursor.fetchall() ]
+        games = [ (zpk[i],games[i]) for i in range(len(games)) ]
+        con.close()
+
+        # Find game in sources
+        for i in games:
+            if gametitle in i[1]:
+                url = next(n[1] for n in art if n[0] == i[0])
+                return url
+        return None
+    except: # On possible failure, just return None
+        return None
+
 # Contains logic code that calls functions to grab data using Apple Script and updates the RPC controller with the data
 def update():
     if not is_running():
@@ -111,6 +144,7 @@ def update():
     # Grab windows
     windows = get_windows()
     menus = False
+    image = 'main'
     for i in ('Library','Gameplay','Controls','Cores','System Files','Shader Parameters'):
         if i in windows:
             menus = i
@@ -129,6 +163,10 @@ def update():
         if len(windows) > 1:
             status = 2
             details = f'Playing {", ".join(windows)}'
+        else:
+            art = get_artwork(windows[0])
+            if art:
+                image = art
     buttons = [{"label": f"See {appName}", "url": "https://openemu.org/"},]
     if status > 0:
         global games
@@ -139,11 +177,11 @@ def update():
     if menus and status > 0:
         details = f'In {menus} of ' + details[8:]
     if status == 0:
-        rpc.update(details=details,large_image='main',large_text=appName,buttons=buttons)
+        rpc.update(details=details,large_image=image,large_text=appName,buttons=buttons)
     elif status == 1:
-        rpc.update(details=details,large_image='main',large_text=appName,start=start,buttons=buttons)
+        rpc.update(details=details,large_image=image,large_text=appName,start=start,buttons=buttons)
     elif status == 2:
-        rpc.update(details=details,large_image='main',large_text=appName,start=start,buttons=buttons)
+        rpc.update(details=details,large_image=image,large_text=appName,start=start,buttons=buttons)
 
 # Run update loop on a separate thread so the menu bar app can run on the main thread
 class BackgroundUpdate(Thread):
