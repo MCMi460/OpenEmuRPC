@@ -124,8 +124,20 @@ def get_artwork(gametitle:str):
         games = [ i[0] for i in cursor.fetchall() ]
         cursor.execute("SELECT Z_PK FROM ZROM")
         zpk = [ i[0] for i in cursor.fetchall() ]
-        games = [ (zpk[i],games[i]) for i in range(len(games)) ]
+        games = [ [zpk[i],games[i]] for i in range(len(games)) ]
         con.close()
+
+        # Reorganize list in case of irregular OpenEmu shennanigans
+        i = 0
+        for e in games:
+            if not e[1]:
+                games.remove(e)
+                h = i
+                for n in range(i,len(games)):
+                    h += 1
+                    games[n][0] = h
+                i -= 1
+            i += 1
 
         # Find game in sources
         for i in games:
