@@ -129,6 +129,8 @@ def get_artwork(gametitle:str):
 
         # Find game in sources
         for i in games:
+            if not i[1]: # Prevent irregular games from prematurely ending the recursion
+                continue
             if gametitle in i[1]:
                 url = next(n[1] for n in art if n[0] == i[0])
                 return url
