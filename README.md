@@ -5,15 +5,12 @@ A simple application that provides your current OpenEmu game as an RPC state in 
 ## How to use
 Unzip and open the latest x86_64 version from the [releases tab](https://github.com/MCMi460/OpenEmuRPC/releases)
 ## How to build
-Paste this into your terminal. Feel free to follow along by reading the steps in [build.sh](https://raw.githubusercontent.com/MCMi460/OpenEmuRPC/main/build.sh).
-```
-curl https://raw.githubusercontent.com/MCMi460/OpenEmuRPC/main/build.sh -o build.sh
-chmod -R 777 build.sh
-./build.sh
-```
-If the app displays a Launch Error, give it permission like so:
+Download the repository and run [build.sh](scripts/build.sh).
 
-** -> System Preferences -> Security and Privacy -> Screen Recording -> +** and choose the app's location.
+### If the app displays a Launch Error, give it permission like so:
+
+** -> System Preferences -> Security and Privacy -> Screen Recording -> +**  
+...and choose the app's location.
 
 ---
 If you have any issues, [please create an issue here](https://github.com/MCMi460/OpenEmuRPC/issues/new).
