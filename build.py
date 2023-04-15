@@ -3,10 +3,10 @@ from setuptools import setup
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
-    'iconfile': 'build/AppIcon.icns',
+    'iconfile': 'images/AppIcon.icns',
     'plist': {
         'CFBundleName': 'OpenEmuRPC',
-        'CFBundleShortVersionString': '1.0',
+        'CFBundleShortVersionString': '1.1',
         'LSUIElement': True,
     },
     'packages': ['rumps'],

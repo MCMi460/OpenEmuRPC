@@ -8,3 +8,8 @@ __pycache__
 # py2app Exclusions
 dist
 .eggs
+build/
+
+# Tests
+test*.*
+test*/
