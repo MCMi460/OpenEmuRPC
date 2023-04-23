@@ -112,11 +112,8 @@ class Client(rumps.App):
             cursor = con.cursor()
 
             # Get sources from image db
-            cursor.execute('SELECT ZSOURCE FROM ZIMAGE')
-            art = [ i[0] for i in cursor.fetchall() ]
-            cursor.execute('SELECT Z_PK FROM ZIMAGE')
-            zsource = [ i[0] for i in cursor.fetchall() ]
-            art = [ (zsource[i],art[i]) for i in range(len(art)) ]
+            cursor.execute("SELECT ZBOX, ZSOURCE FROM ZIMAGE")
+            art = [(i[0], i[1]) for i in cursor.fetchall()]
             cursor.execute('SELECT ZGAMETITLE FROM ZGAME')
             games = [ i[0] for i in cursor.fetchall() ]
             cursor.execute('SELECT Z_PK FROM ZROM')
@@ -131,16 +128,16 @@ class Client(rumps.App):
             # This scares me.
 
             # Reorganize list in case of irregular OpenEmu shennanigans
-            i = 0
-            for e in games:
-                if not e[1]:
-                    games.remove(e)
-                    h = i
-                    for n in range(i, len(games)):
-                        h += 1
-                        games[n][0] = h
-                    i -= 1
-                i += 1
+            # i = 0
+            # for e in games:
+            #     if not e[1]:
+            #         games.remove(e)
+            #         h = i
+            #         for n in range(i, len(games)):
+            #             h += 1
+            #             games[n][0] = h
+            #         i -= 1
+            #     i += 1
 
             # Find game in sources
             for i in games:
