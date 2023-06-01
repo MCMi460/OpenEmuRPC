@@ -1,4 +1,4 @@
-import threading, time, sqlite3, os, sys, datetime
+import threading, time, sqlite3, os, sys, datetime, platform
 if not sys.platform.startswith('darwin'):
     sys.exit('OpenEmu is a macOS exclusive application.')
 
@@ -13,9 +13,16 @@ emupath = os.path.expanduser('~/Library/Application Support/OpenEmu/Game Library
 # Define menu bar object and run it
 class Client(rumps.App):
     def __init__(self):
-        if not self.check_permissions():
-            self.request_permissions()
-            self.handle_error('Failed to receive permissions.', True)
+        try:
+            if not self.check_permissions():
+                self.request_permissions()
+                self.handle_error('Failed to receive permissions.', True)
+        except AttributeError as error:
+            ver = platform.mac_ver()[0].split('.')
+            if ver[0] == '10' and int(ver[1]) < 15:
+                print('running pre-screen-recording permissions macos')
+            else:
+                raise error
         self.rpc = None
         self.games = None
         self.connect()
@@ -112,7 +119,7 @@ class Client(rumps.App):
             cursor = con.cursor()
 
             # Get sources from image db
-            cursor.execute("SELECT ZBOX, ZSOURCE FROM ZIMAGE")
+            cursor.execute('SELECT ZBOX, ZSOURCE FROM ZIMAGE')
             art = [(i[0], i[1]) for i in cursor.fetchall()]
             cursor.execute('SELECT ZGAMETITLE FROM ZGAME')
             games = [ i[0] for i in cursor.fetchall() ]
@@ -120,24 +127,6 @@ class Client(rumps.App):
             zpk = [ i[0] for i in cursor.fetchall() ]
             games = [ [zpk[i], games[i]] for i in range(len(games)) ]
             con.close()
-
-            # Ahem, Future Delta here.
-            # I do not want to mess with past me's stuff.
-            # I fear no man.
-            # But this?
-            # This scares me.
-
-            # Reorganize list in case of irregular OpenEmu shennanigans
-            # i = 0
-            # for e in games:
-            #     if not e[1]:
-            #         games.remove(e)
-            #         h = i
-            #         for n in range(i, len(games)):
-            #             h += 1
-            #             games[n][0] = h
-            #         i -= 1
-            #     i += 1
 
             # Find game in sources
             for i in games:
